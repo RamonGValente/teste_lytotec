@@ -1,0 +1,62 @@
+-- Agora finalmente podemos remover o campo funcoes e fazer as atualizações finais
+
+-- 1. Atualizar a policy do profiles
+DROP POLICY IF EXISTS "SuperAdmin can access all profiles" ON profiles;
+CREATE POLICY "SuperAdmin can access all profiles" 
+ON profiles 
+FOR ALL 
+USING (
+  (id = auth.uid()) OR 
+  check_is_super_admin_new(auth.uid())
+)
+WITH CHECK (
+  (id = auth.uid()) OR 
+  check_is_super_admin_new(auth.uid())
+);
+
+-- 2. Atualizar a função check_is_super_admin original para usar o novo sistema
+CREATE OR REPLACE FUNCTION public.check_is_super_admin(user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE SECURITY DEFINER
+AS $function$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles p
+    JOIN bd_funcoes_permissao fp ON p.funcao_permissao = fp.id
+    WHERE p.id = user_id 
+    AND fp.nome_funcao = 'SuperAdm'
+  );
+$function$;
+
+-- 3. Remover o campo funcoes da tabela profiles
+ALTER TABLE profiles DROP COLUMN funcoes CASCADE;
+
+-- 4. Tornar funcao_permissao obrigatório (NOT NULL)
+ALTER TABLE profiles ALTER COLUMN funcao_permissao SET NOT NULL;
+
+-- 5. Criar função auxiliar para obter permissões do usuário baseada no novo sistema
+CREATE OR REPLACE FUNCTION public.get_user_permissions(user_id uuid)
+RETURNS text[]
+LANGUAGE sql
+STABLE SECURITY DEFINER
+AS $function$
+  SELECT fp.permissoes
+  FROM profiles p
+  JOIN bd_funcoes_permissao fp ON p.funcao_permissao = fp.id
+  WHERE p.id = user_id;
+$function$;
+
+-- 6. Criar função para verificar se usuário tem permissão específica
+CREATE OR REPLACE FUNCTION public.user_has_permission(user_id uuid, permission_name text)
+RETURNS boolean
+LANGUAGE sql
+STABLE SECURITY DEFINER
+AS $function$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles p
+    JOIN bd_funcoes_permissao fp ON p.funcao_permissao = fp.id
+    JOIN bd_permissoes perm ON perm.id = ANY(fp.permissoes)
+    WHERE p.id = user_id 
+    AND perm.nome_permissao = permission_name
+  );
+$function$;

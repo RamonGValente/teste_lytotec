@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LytoTec Abastecimentos</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0e6ed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            color: #333;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 1200px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        #login-form {
+            max-width: 400px;
+            margin: auto;
+        }
+        h2, h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+        }
+        label span {
+            margin-right: 8px;
+            color: #007bff;
+            font-size: 1.2em;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1.1em;
+            color: #333;
+            background-color: #f8f9fa;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+        button {
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            width: 100%;
+            letter-spacing: 0.5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #message {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        .message-error {
+            color: #dc3545;
+        }
+        .message-success {
+            color: #28a745;
+        }
+        #data-display {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 1200px;
+            box-sizing: border-box;
+            display: none;
+            margin-top: 20px;
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .filter-grid .form-group {
+            margin-bottom: 0;
+        }
+        .search-button-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 10px;
+        }
+        .search-button-container button {
+            min-width: 120px;
+            padding: 10px 15px;
+            font-size: 16px;
+            width: auto;
+        }
+        
+        /* Área de resultados */
+        .results-area {
+            margin-top: 20px;
+            border-top: 1px solid #ced4da;
+            padding-top: 20px;
+        }
+        #data-status {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        /* --- Estilos para a exibição tabular --- */
+        #abastecimentos-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background-color: #fff;
+            margin-top: 20px;
+            display: none;
+        }
+
+        #abastecimentos-table {
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) /* Identificador */
+                                    minmax(150px, 1fr) /* Tipo Procedimento */
+                                    minmax(130px, 1fr) /* Data Abast */
+                                    minmax(100px, 1fr) /* Hora Abast */
+                                    minmax(180px, 1fr) /* Comboista */
+                                    minmax(150px, 1fr) /* Operador */
+                                    minmax(120px, 1fr) /* Operação */
+                                    minmax(100px, 1fr) /* Frota */
+                                    minmax(100px, 1fr) /* Medidor */
+                                    minmax(150px, 1fr) /* Medidor Via Entrada */
+                                    minmax(150px, 1fr) /* Medidor Unidade */
+                                    minmax(80px, 1fr)  /* Bico */
+                                    minmax(120px, 1fr) /* Combustível */
+                                    minmax(100px, 1fr) /* Litragem */
+                                    minmax(150px, 1fr) /* Encerrante Final */
+                                    minmax(150px, 1fr) /* Cód. Terceiro */
+                                    minmax(120px, 1fr) /* Latitude */
+                                    minmax(120px, 1fr) /* Longitude */
+                                    minmax(150px, 1fr) /* Foto Verificada */
+                                    minmax(200px, 1fr) /* Identificação do Ponto */
+                                    minmax(100px, 1fr) /* Estoque */
+                                    minmax(160px, 1fr) /* Medidor Ant. Data */
+                                    minmax(160px, 1fr) /* Medidor Ant. Valor */
+                                    minmax(100px, 1fr) /* Placa */
+                                    minmax(150px, 1fr) /* Centro de Custo (CC) */
+                                    minmax(180px, 1fr) /* Registro Editado Em */
+                                    minmax(180px, 1fr) /* Registrado Editado Por */
+                                    minmax(120px, 1fr) /* Frota Tag */
+                                    minmax(120px, 1fr) /* Comboista Tag */
+                                    minmax(120px, 1fr) /* Operador Tag */
+                                    minmax(180px, 1fr); /* Data Integração */
+            width: fit-content;
+            min-width: 100%;
+        }
+
+        .table-header, .table-row {
+            display: contents;
+        }
+
+        .table-header div, .table-cell {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e6ea;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .table-header div {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .table-header div span {
+            margin-right: 5px;
+        }
+
+        .table-row:nth-child(even) .table-cell {
+            background-color: #f8f9fa;
+        }
+        .table-row:nth-child(odd) .table-cell {
+            background-color: #ffffff;
+        }
+        
+        .table-cell {
+            font-size: 0.85em;
+        }
+
+        /* Controles de paginação */
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+            display: none;
+        }
+        
+        .pagination-button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            width: auto;
+        }
+        
+        .pagination-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .pagination-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .pagination-info {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .page-size-selector select {
+            width: auto;
+            padding: 5px;
+        }
+        
+        /* --- Estilos do Dashboard --- */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ced4da;
+        }
+        
+        .dashboard-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        /* Cores dos ícones dos cards - Mantenho as originais ou posso mudar para tons de azul */
+        .summary-1 .summary-icon {
+            background: rgba(26, 115, 232, 0.1);
+            color: #1a73e8;
+        }
+        
+        .summary-2 .summary-icon {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+        }
+        
+        .summary-3 .summary-icon {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+        }
+        
+        .summary-4 .summary-icon { /* Reutilizado para Consumo */
+            background: rgba(156, 39, 176, 0.1);
+            color: #9c27b0;
+        }
+
+        .summary-5 .summary-icon { /* Novo para KM Rodado Filtrado */
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+        
+        .summary-text h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .summary-text p {
+            color: #777;
+            font-size: 13px;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        /* Para o gráfico de KM rodado que será full-width */
+        .chart-card.full-width {
+            grid-column: 1 / -1; /* Ocupa todas as colunas */
+        }
+
+        @media (max-width: 900px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            .chart-card.full-width {
+                grid-column: auto; /* Reseta para uma coluna em telas menores */
+            }
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .chart-content {
+            flex: 1;
+            min-height: 280px;
+        }
+        
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .tab-btn {
+            background: #f1f3f4;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background: #1a73e8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-form" class="container">
+        <h2>LytoTec Abastecimentos </h2>
+        <div class="form-group">
+            <label for="username"><span>👤</span> Usuário:</label>
+            <input type="text" id="username" name="username" required value="testekorth@lytoranea">
+        </div>
+        <div class="form-group">
+            <label for="password"><span>🔑</span> Senha:</label>
+            <input type="password" id="password" name="password" required value="0123456789">
+        </div>
+        <button id="loginButton">ACESSAR</button>
+        <div id="message" class="message-error"></div>
+    </div>
+
+    <div id="data-display" class="container">
+        <div class="dashboard-header">
+            <h3>LytoTec-Abastecimentos</h3>
+            <button id="toggleDashboard" class="btn" style="width: auto; padding: 10px 20px;">
+                <i>📊</i> Alternar Dashboard
+            </button>
+        </div>
+
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="startDate"><span></span> Data Inicial:</label>
+                <input type="date" id="startDate" required>
+            </div>
+            <div class="form-group">
+                <label for="endDate"><span></span> Data Final:</label>
+                <input type="date" id="endDate" required>
+            </div>
+            <div class="form-group">
+                <label for="comboista"><span></span> Comboista:</label>
+                <input type="text" id="comboista" placeholder="Nome do Comboista">
+            </div>
+            <div class="form-group">
+                <label for="frota"><span></span> Frota:</label>
+                <input type="text" id="frota" placeholder="Código da Frota">
+            </div>
+            <div class="form-group">
+                <label for="placa"><span></span> Placa:</label>
+                <input type="text" id="placa" placeholder="ABC1234">
+            </div>
+            <div class="form-group">
+                <label for="cc"><span></span> Centro de Custo (CC):</label>
+                <input type="text" id="cc" placeholder="Código do CC">
+            </div>
+            <div class="form-group">
+                <label for="limit"><span></span> Resultados por página:</label>
+                <select id="limit">
+                    <option value="5" selected>5 Linhas</option>
+                    <option value="10">10 Linhas</option>
+                    <option value="20">20 Linhas</option>
+                    <option value="30">30 Linhas</option>
+                    <option value="50">50 Linhas</option>
+                </select>
+            </div>
+            <div class="search-button-container">
+                <button id="searchButton">Buscar</button>
+            </div>
+        </div>
+        
+        <div id="dashboard-content" style="display: none;">
+            <div class="summary-cards">
+                <div class="summary-card summary-1">
+                    <div class="summary-icon">
+                        <i>⛽</i>
+                    </div>
+                    <div class="summary-text">
+                        <h3 id="total-abastecimentos">0</h3>
+                        <p>Total de Abastecimentos</p>
+                    </div>
+                </div>
+                <div class="summary-card summary-2">
+                    <div class="summary-icon">
+                        <i>📈</i>
+                    </div>
+                    <div class="summary-text">
+                        <h3 id="total-litros">0 L</h3>
+                        <p>Litros Abastecidos</p>
+                    </div>
+                </div>
+                <div class="summary-card summary-3">
+                    <div class="summary-icon">
+                        <i>🚛</i>
+                    </div>
+                    <div class="summary-text">
+                        <h3 id="total-frotas">0</h3>
+                        <p>Frotas Ativas</p>
+                    </div>
+                </div>
+                 <div class="summary-card summary-4">
+                    <div class="summary-icon">
+                        <i>📊</i>
+                    </div>
+                    <div class="summary-text">
+                        <h3 id="avg-consumption-overall">0 km/L</h3>
+                        <p>Consumo Médio Geral</p>
+                    </div>
+                </div>
+                <div class="summary-card summary-5" id="totalKmRodadoCard" style="display: none;">
+                    <div class="summary-icon">
+                        <i>🚛</i>
+                    </div>
+                    <div class="summary-text">
+                        <h3 id="total-km-rodado">0 km</h3>
+                        <p>Total KM Rodado (Filtrado)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-card full-width" id="chartConsumoDiarioCard" style="display: none;">
+                    <div class="chart-header">
+                        <div class="chart-title">Consumo Médio por Veículo (km/L) Diário</div>
+                        <div class="chart-info">
+                            <i>ℹ️</i> Exibido com filtros de Frota ou Placa
+                        </div>
+                    </div>
+                    <div class="chart-content" id="chartConsumoDiario"></div>
+                </div>
+                
+                <div class="chart-card full-width">
+                    <div class="chart-header">
+                        <div class="chart-title">Litragem Diária</div>
+                        <div class="chart-tabs">
+                            <button class="tab-btn active" data-period="daily">Diário</button>
+                            <button class="tab-btn" data-period="monthly">Mensal</button>
+                        </div>
+                    </div>
+                    <div class="chart-content" id="chartLitragem"></div>
+                </div>
+            </div>
+        </div>
+        <div class="results-area">
+            <p id="data-status">Use os filtros acima e clique em "Buscar" para carregar os dados.</p>
+            <div id="abastecimentos-table-wrapper">
+                <div id="abastecimentos-table">
+                    <div class="table-header">
+                        <div><span>🆔</span> Identificador</div>
+                        <div><span>⚙️</span> Tipo Procedimento</div>
+                        <div><span>📅</span> Data Abastecimento</div>
+                        <div><span>⏱️</span> Hora Abastecimento</div>
+                        <div><span>👨‍🔧</span> Comboista</div>
+                        <div><span>👷</span> Operador</div>
+                        <div><span>📈</span> Operação</div>
+                        <div><span>🚚</span> Frota</div>
+                        <div><span>📏</span> Medidor</div>
+                        <div><span>🛣️</span> Medidor Via Entrada</div>
+                        <div><span>⚖️</span> Medidor Unidade</div>
+                        <div><span>⛽</span> Bico</div>
+                        <div><span>⛽</span> Combustível</div>
+                        <div><span>💧</span> Litragem</div>
+                        <div><span>🔢</span> Encerrante Final</div>
+                        <div><span>👥</span> Cód. Terceiro</div>
+                        <div><span>📍</span> Latitude</div>
+                        <div><span>📍</span> Longitude</div>
+                        <div><span>✅</span> Foto Verificada</div>
+                        <div><span>🗺️</span> Identificação do Ponto</div>
+                        <div><span>📦</span> Estoque</div>
+                        <div><span>📅⏪</span> Medidor Ant. Data</div>
+                        <div><span>📏⏪</span> Medidor Ant. Valor</div>
+                        <div><span>🚗</span> Placa</div>
+                        <div><span>💳</span> Centro de Custo (CC)</div>
+                        <div><span>📝⏱️</span> Registro Editado Em</div>
+                        <div><span>✍️</span> Registrado Editado Por</div>
+                        <div><span>🏷️</span> Frota Tag</div>
+                        <div><span>🏷️</span> Comboista Tag</div>
+                        <div><span>🏷️</span> Operador Tag</div>
+                        <div><span>🔗📅</span> Data Integração</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pagination-controls">
+                <button id="prev-page" class="pagination-button">Anterior</button>
+                <span id="page-info" class="pagination-info">Página 1 de 1</span>
+                <button id="next-page" class="pagination-button">Próxima</button>
+            </div>
+        </div>
+        <button id="logoutButton" style="background-color: #0681EC; margin-top: 20px;">Sair</button>
+    </div>
+
+    <script>
+        // --- Configurações dos Endpoints do SEU PROXY LOCAL ---
+        const LOCAL_PROXY_BASE_URL = "http://127.0.0.1:5000/api";
+        const AUTH_ENDPOINT = `${LOCAL_PROXY_BASE_URL}/authenticate`;
+        const ABASTECIMENTOS_ENDPOINT = `${LOCAL_PROXY_BASE_URL}/abastecimentos`;
+
+        // Elementos do DOM
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('loginButton');
+        const logoutButton = document.getElementById('logoutButton');
+        const messageDiv = document.getElementById('message');
+        const loginFormDiv = document.getElementById('login-form');
+        const dataDisplayDiv = document.getElementById('data-display');
+        const abastecimentosTableWrapper = document.getElementById('abastecimentos-table-wrapper');
+        const abastecimentosTableDiv = document.getElementById('abastecimentos-table');
+        const dataStatusP = document.getElementById('data-status');
+        const toggleDashboardBtn = document.getElementById('toggleDashboard');
+        const dashboardContent = document.getElementById('dashboard-content');
+        
+        // Elementos para pesquisa
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const comboistaInput = document.getElementById('comboista');
+        const frotaInput = document.getElementById('frota');
+        const placaInput = document.getElementById('placa');
+        const ccInput = document.getElementById('cc');
+        const limitSelect = document.getElementById('limit');
+        const searchButton = document.getElementById('searchButton');
+        
+        // Elementos de paginação
+        const prevPageButton = document.getElementById('prev-page');
+        const nextPageButton = document.getElementById('next-page');
+        const pageInfoSpan = document.getElementById('page-info');
+        const paginationControlsDiv = document.querySelector('.pagination-controls');
+        
+        // Elementos de dashboard
+        const totalAbastecimentosEl = document.getElementById('total-abastecimentos');
+        const totalLitrosEl = document.getElementById('total-litros');
+        const totalFrotasEl = document.getElementById('total-frotas');
+        const avgConsumptionOverallEl = document.getElementById('avg-consumption-overall'); 
+        const totalKmRodadoEl = document.getElementById('total-km-rodado'); // Novo card KM
+        
+        // Variáveis globais
+        let authToken = null;
+        let allAbastecimentos = [];
+        let filteredAbastecimentos = [];
+        let currentPage = 1;
+        let rowsPerPage = 5;
+        let totalPages = 1;
+        let chartFrota = null; 
+        let chartLitragem = null;
+        let chartConsumoDiario = null;
+        let showDashboard = true;
+
+        // Elementos dos cards/gráficos que serão exibidos condicionalmente
+        const totalKmRodadoCard = document.getElementById('totalKmRodadoCard'); // O novo card
+        const chartConsumoDiarioCard = document.getElementById('chartConsumoDiarioCard'); // O gráfico de consumo diário
+
+        // Mapeamento de números para nomes de comboistas
+        const comboistaNames = {
+            '4': 'XAVIER',
+            '5': 'GILBERTO',
+            '6': 'JEFFERSON CRYSTON',
+            '7': 'MARLEI',
+            '9': 'NÃO INFORMADO',
+            '10': 'JUNIOR ENDLICH',
+            '14': 'MAURILIO',
+            '15': 'VICTOR',
+            '16': 'MOISES',
+            '18': 'REGINALDO',
+            '23': 'LUIZ CARLOS',
+            '25': 'MARCIO DINIZ LEITE',
+            '26': 'FERNANDO',
+            '27': 'MARLON',
+            '28': 'EDUARDO GARCIA',
+            '29': 'MARCELO AUGUSTO',
+            '30': 'JOSE CARLOS',
+            '34': 'LUIS BELTRAME',
+            '35': 'LUIS BELTRAME 2',
+            '37': 'MARCOS'
+        };
+
+
+        // --- Funções Auxiliares de UI ---
+
+        function showMessage(msg, isError = true) {
+            messageDiv.textContent = msg;
+            messageDiv.className = isError ? 'message-error' : 'message-success';
+        }
+
+        function hideLoginShowData() {
+            loginFormDiv.style.display = 'none';
+            dataDisplayDiv.style.display = 'block';
+        }
+
+        function showLoginHideData() {
+            loginFormDiv.style.display = 'block';
+            dataDisplayDiv.style.display = 'none';
+            const headerRow = abastecimentosTableDiv.querySelector('.table-header');
+            abastecimentosTableDiv.innerHTML = '';
+            if (headerRow) {
+                abastecimentosTableDiv.appendChild(headerRow);
+            }
+            dataStatusP.textContent = 'Use os filtros acima e clique em "Buscar" para carregar os dados.';
+            messageDiv.textContent = '';
+            abastecimentosTableWrapper.style.display = 'none';
+            paginationControlsDiv.style.display = 'none';
+            dashboardContent.style.display = 'none';
+            
+            // Garante que os cards/gráficos condicionais estejam ocultos ao sair/login
+            if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+            if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+        }
+
+        // Função para formatar a data (AAAA-MM-DD)
+        function formatDate(date) {
+            const d = new Date(date);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            const year = d.getFullYear();
+
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+        
+        // Função para atualizar a paginação
+        function updatePaginationControls() {
+            prevPageButton.disabled = currentPage === 1;
+            nextPageButton.disabled = currentPage === totalPages;
+            
+            pageInfoSpan.textContent = `Página ${currentPage} de ${totalPages}`;
+        }
+        
+        // Função para exibir os dados na tabela com paginação
+        function displayPaginatedData() {
+            const headerRow = abastecimentosTableDiv.querySelector('.table-header');
+            abastecimentosTableDiv.innerHTML = '';
+            abastecimentosTableDiv.appendChild(headerRow);
+            
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredAbastecimentos.length);
+            const paginatedData = filteredAbastecimentos.slice(startIndex, endIndex);
+            
+            if (paginatedData.length > 0) {
+                paginatedData.forEach(abast => {
+                    // Modificação: Substituir o número do comboista pelo nome correspondente
+                    const comboistaId = abast.comboista ? abast.comboista.toString() : '';
+                    const comboistaDisplay = comboistaNames[comboistaId] || (abast.comboista || 'N/A');
+
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'table-row';
+                    rowDiv.innerHTML = `
+                        <div class="table-cell">${abast.identificador || 'N/A'}</div>
+                        <div class="table-cell">${abast.tipo_procedimento || 'N/A'}</div>
+                        <div class="table-cell">${abast.data_abast || 'N/A'}</div>
+                        <div class="table-cell">${abast.hora_abast || 'N/A'}</div>
+                        <div class="table-cell">${comboistaDisplay}</div>
+                        <div class="table-cell">${abast.operador || 'N/A'}</div>
+                        <div class="table-cell">${abast.operacao || 'N/A'}</div>
+                        <div class="table-cell">${abast.frota || 'N/A'}</div>
+                        <div class="table-cell">${abast.medidor || 'N/A'}</div>
+                        <div class="table-cell">${abast.medidor_via_entrada || 'N/A'}</div>
+                        <div class="table-cell">${abast.medidor_unidade || 'N/A'}</div>
+                        <div class="table-cell">${abast.bico || 'N/A'}</div>
+                        <div class="table-cell">${abast.combustivel || 'N/A'}</div>
+                        <div class="table-cell">${abast.litragem || 'N/A'}</div>
+                        <div class="table-cell">${abast.encerrante_fim || 'N/A'}</div>
+                        <div class="table-cell">${abast.codigo_terceiro || 'N/A'}</div>
+                        <div class="table-cell">${abast.latitude || 'N/A'}</div>
+                        <div class="table-cell">${abast.longitude || 'N/A'}</div>
+                        <div class="table-cell">${abast.foto_verificada ? 'Sim' : 'Não'}</div>
+                        <div class="table-cell">${abast.identificacao_do_ponto || 'N/A'}</div>
+                        <div class="table-cell">${abast.estoque || 'N/A'}</div>
+                        <div class="table-cell">${abast.medidor_anterior_data || 'N/A'}</div>
+                        <div class="table-cell">${abast.medidor_anterior_valor || 'N/A'}</div>
+                        <div class="table-cell">${abast.placa || 'N/A'}</div>
+                        <div class="table-cell">${abast.cc || 'N/A'}</div>
+                        <div class="table-cell">${abast.registro_editado_em || 'N/A'}</div>
+                        <div class="table-cell">${abast.registrado_editado_por || 'N/A'}</div>
+                        <div class="table-cell">${abast.frota_tag || 'N/A'}</div>
+                        <div class="table-cell">${abast.comboista_tag || 'N/A'}</div>
+                        <div class="table-cell">${abast.operador_tag || 'N/A'}</div>
+                        <div class="table-cell">${abast.data_integracao || 'N/A'}</div>
+                    `;
+                    abastecimentosTableDiv.appendChild(rowDiv);
+                });
+                abastecimentosTableWrapper.style.display = 'block';
+                paginationControlsDiv.style.display = 'flex';
+            } else {
+                const noDataRow = document.createElement('div');
+                noDataRow.className = 'table-row';
+                noDataRow.innerHTML = `<div class="table-cell" style="grid-column: 1 / -1; text-align: center; padding: 20px;">Nenhum dado encontrado para os filtros aplicados.</div>`;
+                abastecimentosTableDiv.appendChild(noDataRow);
+                abastecimentosTableWrapper.style.display = 'block';
+                paginationControlsDiv.style.display = 'none';
+            }
+            
+            totalPages = Math.ceil(filteredAbastecimentos.length / rowsPerPage);
+            updatePaginationControls();
+        }
+
+        // Função para gerar os gráficos
+        function generateCharts(abastecimentos) {
+            // Dados para os gráficos
+            const kmRodadoData = {}; 
+            const frotaData = {}; 
+            const litragemDiaria = {};
+            
+            let totalLitros = 0;
+            
+            // Variável para rastrear o último medidor por veículo para cálculo de KM total
+            const lastMedidorByVehicle = {};
+
+            // Processar dados para os gráficos
+            abastecimentos.forEach(abast => {
+                const litragem = parseFloat(abast.litragem) || 0;
+                totalLitros += litragem;
+                
+                // Abastecimentos por frota
+                const frota = abast.frota || 'Desconhecido';
+                if (!frotaData[frota]) {
+                    frotaData[frota] = 0;
+                }
+                frotaData[frota]++;
+                
+                // Litragem diária
+                if (abast.data_abast) {
+                    const data = abast.data_abast.split('T')[0]; // Apenas a parte da data
+                    if (!litragemDiaria[data]) {
+                        litragemDiaria[data] = 0;
+                    }
+                    litragemDiaria[data] += litragem;
+                }
+
+                // Cálculo de KM Rodado por Veículo 
+                const vehicleKey = abast.placa || abast.frota;
+                if (vehicleKey && !isNaN(parseFloat(abast.medidor))) {
+                    const currentMedidor = parseFloat(abast.medidor);
+
+                    if (!lastMedidorByVehicle[vehicleKey]) {
+                        lastMedidorByVehicle[vehicleKey] = currentMedidor;
+                        // Não calcula KM para o primeiro abastecimento, apenas armazena o medidor
+                    } else {
+                        const kmDriven = currentMedidor - lastMedidorByVehicle[vehicleKey];
+                        if (kmDriven > 0) { // Considera apenas KM positivos
+                            if (!kmRodadoData[vehicleKey]) {
+                                kmRodadoData[vehicleKey] = 0;
+                            }
+                            kmRodadoData[vehicleKey] += kmDriven;
+                        }
+                        lastMedidorByVehicle[vehicleKey] = currentMedidor; // Atualiza o último medidor
+                    }
+                }
+            });
+            
+            // Calcular consumo médio geral e dados para o gráfico de consumo diário
+            const consumptionAnalysisDaily = calculateDailyFuelConsumption(abastecimentos);
+            
+            let totalFrotas = new Set();
+            abastecimentos.forEach(abast => {
+                if (abast.frota) {
+                    totalFrotas.add(abast.frota);
+                }
+            });
+            
+            // Recalcula totalKmDriven e totalLitersConsumed para o consumo médio geral do card
+            let allKmDrivenOverall = 0; 
+            let allLitersConsumedOverall = 0; 
+
+            const tempVehicleDataForOverall = {};
+            abastecimentos.forEach(abast => {
+                const vehicleKey = abast.placa || abast.frota;
+                if (!vehicleKey) return;
+                if (!tempVehicleDataForOverall[vehicleKey]) {
+                    tempVehicleDataForOverall[vehicleKey] = [];
+                }
+                tempVehicleDataForOverall[vehicleKey].push({
+                    datetime: new Date(`${abast.data_abast}T${abast.hora_abast}`),
+                    medidor: parseFloat(abast.medidor),
+                    litragem: parseFloat(abast.litragem)
+                });
+            });
+
+            for (const vehicleKey in tempVehicleDataForOverall) {
+                const entries = tempVehicleDataForOverall[vehicleKey];
+                entries.sort((a, b) => a.datetime - b.datetime);
+                let previousMedidorValid = null;
+
+                for (let i = 0; i < entries.length; i++) {
+                    const currentEntry = entries[i];
+                    if (!isNaN(currentEntry.medidor)) {
+                        if (previousMedidorValid !== null) {
+                            const kmDriven = currentEntry.medidor - previousMedidorValid;
+                            if (kmDriven > 0 && !isNaN(currentEntry.litragem) && currentEntry.litragem > 0) {
+                                allKmDrivenOverall += kmDriven;
+                                allLitersConsumedOverall += currentEntry.litragem;
+                            }
+                        }
+                        previousMedidorValid = currentEntry.medidor;
+                    }
+                }
+            }
+            
+            let avgOverallConsumption = (allLitersConsumedOverall > 0) ? (allKmDrivenOverall / allLitersConsumedOverall) : 0;
+
+            // Calcular o KM Total dos veículos filtrados para o novo card
+            let totalKmOverallForCard = 0;
+            for (const vehicleKey in kmRodadoData) {
+                totalKmOverallForCard += kmRodadoData[vehicleKey];
+            }
+            totalKmRodadoEl.textContent = `${totalKmOverallForCard.toFixed(0)} km`;
+
+            // Atualizar cards de resumo
+            totalAbastecimentosEl.textContent = abastecimentos.length.toLocaleString();
+            totalLitrosEl.textContent = totalLitros.toFixed(0) + ' L';
+            totalFrotasEl.textContent = totalFrotas.size;
+            avgConsumptionOverallEl.textContent = `${avgOverallConsumption.toFixed(2)} km/L`;
+            
+            // Converter dados para formato de gráfico
+            const kmRodadoChartData = Object.entries(kmRodadoData)
+                .map(([name, km]) => ({ name, km }))
+                .sort((a, b) => b.km - a.km) 
+                .slice(0, 10); // Top 10 veículos por KM
+            
+            const frotaChartData = Object.entries(frotaData)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10); // Top 10 frotas
+            
+            const litragemDiariaChartData = Object.entries(litragemDiaria)
+                .map(([date, litros]) => ({ x: date, y: litros }))
+                .sort((a, b) => new Date(a.x) - new Date(b.x));
+            
+            // Gerar gráficos
+            renderCharts(
+                kmRodadoChartData, 
+                frotaChartData, 
+                litragemDiariaChartData,
+                consumptionAnalysisDaily 
+            );
+        }
+        
+        // Função para renderizar os gráficos
+        function renderCharts(kmRodadoData, frotaData, litragemData, consumptionAnalysisDailyData) {
+            // Destruir gráficos existentes
+            if (chartLitragem) chartLitragem.destroy();
+            if (chartConsumoDiario) chartConsumoDiario.destroy(); 
+            
+            // DEFINIÇÃO DAS CORES AZUIS
+            const blueColors = [
+                '#007bff', // Azul primário
+                '#4285F4', // Azul Google
+                '#1E90FF', // Azul DodgerBlue
+                '#6495ED', // Azul CornflowerBlue
+                '#87CEEB', // Azul SkyBlue
+                '#ADD8E6', // Azul LightBlue
+                '#4682B4', // Azul SteelBlue
+                '#5F9EA0'  // Azul CadetBlue
+            ];
+            
+            // Gráfico de linha - Litragem Diária
+            chartLitragem = new ApexCharts(document.querySelector("#chartLitragem"), {
+                series: [{
+                    name: "Litros",
+                    data: litragemData
+                }],
+                chart: {
+                    height: '100%',
+                    type: 'line',
+                    zoom: { enabled: false },
+                    toolbar: { show: false }
+                },
+                colors: [blueColors[2]], 
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                markers: { size: 5 },
+                xaxis: {
+                    type: 'datetime',
+                    labels: { style: { colors: '#777', fontSize: '12px' } }
+                },
+                yaxis: {
+                    title: { text: 'Litros', style: { color: '#777', fontSize: '12px' } },
+                    labels: { style: { colors: '#777', fontSize: '12px' } }
+                },
+                grid: { borderColor: '#f1f3f4' },
+                tooltip: {
+                    x: { format: 'dd MMM yyyy' },
+                    y: { formatter: function(val) { return val.toFixed(0) + " litros" } }
+                }
+            });
+            chartLitragem.render();
+
+            // GRÁFICO: Consumo Médio por Veículo (km/L) Diário (gráfico de linha)
+            chartConsumoDiario = new ApexCharts(document.querySelector("#chartConsumoDiario"), {
+                series: consumptionAnalysisDailyData, 
+                chart: {
+                    height: '100%',
+                    type: 'line',
+                    zoom: { enabled: false },
+                    toolbar: { show: false }
+                },
+                colors: [
+                    '#007bff', '#4285F4', '#1E90FF', '#6495ED', '#87CEEB', 
+                    '#ADD8E6', '#4682B4', '#5F9EA0', '#7B68EE', '#4169E1'
+                ], 
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                markers: { size: 5 },
+                xaxis: {
+                    type: 'datetime',
+                    labels: { style: { colors: '#777', fontSize: '12px' } }
+                },
+                yaxis: {
+                    title: { text: 'Consumo (km/L)', style: { color: '#777', fontSize: '12px' } },
+                    labels: { style: { colors: '#777', fontSize: '12px' } }
+                },
+                grid: { borderColor: '#f1f3f4' },
+                tooltip: {
+                    x: { format: 'dd MMM yyyy' },
+                    y: { formatter: function(val) { return val ? val.toFixed(2) + " km/L" : 'N/A'; } }
+                }
+            });
+            chartConsumoDiario.render();
+        }
+        
+        // --- Funções para cálculo de Consumo (mantidas do estado anterior) ---
+        // Calcula o consumo diário por veículo
+        function calculateDailyFuelConsumption(abastecimentos) {
+            const vehicleDailyData = {}; 
+            const vehicleLastMedidor = {}; 
+
+            const groupedByVehicle = {};
+            abastecimentos.forEach(abast => {
+                const vehicleKey = abast.placa || abast.frota;
+                if (!vehicleKey) return;
+
+                if (!groupedByVehicle[vehicleKey]) {
+                    groupedByVehicle[vehicleKey] = [];
+                }
+                groupedByVehicle[vehicleKey].push({
+                    datetime: new Date(`${abast.data_abast}T${abast.hora_abast}`),
+                    date: abast.data_abast.split('T')[0], 
+                    medidor: parseFloat(abast.medidor),
+                    litragem: parseFloat(abast.litragem)
+                });
+            });
+
+            for (const vehicleKey in groupedByVehicle) {
+                const entries = groupedByVehicle[vehicleKey];
+                entries.sort((a, b) => a.datetime - b.datetime); 
+
+                vehicleDailyData[vehicleKey] = {};
+                vehicleLastMedidor[vehicleKey] = null; 
+
+                for (let i = 0; i < entries.length; i++) {
+                    const currentEntry = entries[i];
+                    const currentDate = currentEntry.date;
+
+                    if (!vehicleDailyData[vehicleKey][currentDate]) {
+                        vehicleDailyData[vehicleKey][currentDate] = { km_driven: 0, liters_consumed: 0 };
+                    }
+
+                    if (!isNaN(currentEntry.medidor)) {
+                        if (vehicleLastMedidor[vehicleKey] !== null) {
+                            const kmDriven = currentEntry.medidor - vehicleLastMedidor[vehicleKey];
+                            if (kmDriven > 0 && !isNaN(currentEntry.litragem) && currentEntry.litragem > 0) {
+                                vehicleDailyData[vehicleKey][currentDate].km_driven += kmDriven;
+                                vehicleDailyData[vehicleKey][currentDate].liters_consumed += currentEntry.litragem;
+                            }
+                        }
+                        vehicleLastMedidor[vehicleKey] = currentEntry.medidor; 
+                    }
+                }
+            }
+
+            const chartSeries = [];
+            const uniqueDates = Array.from(new Set(abastecimentos.map(abast => abast.data_abast.split('T')[0])))
+                                .sort((a, b) => new Date(a) - new Date(b));
+
+            for (const vehicleKey in vehicleDailyData) {
+                const dataPoints = [];
+                uniqueDates.forEach(date => {
+                    const dailyStats = vehicleDailyData[vehicleKey][date];
+                    let kmPerLiter = null; 
+                    if (dailyStats && dailyStats.liters_consumed > 0) {
+                        kmPerLiter = dailyStats.km_driven / dailyStats.liters_consumed;
+                    }
+                    dataPoints.push({
+                        x: new Date(date).getTime(), 
+                        y: kmPerLiter ? parseFloat(kmPerLiter.toFixed(2)) : null 
+                    });
+                });
+
+                chartSeries.push({
+                    name: vehicleKey,
+                    data: dataPoints
+                });
+            }
+            return chartSeries;
+        }
+
+
+        // --- Funções para Interagir com o Servidor Proxy ---
+
+        async function authenticate(username, password) {
+            showMessage('Autenticando...', false);
+            try {
+                const response = await fetch(AUTH_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ login: username, senha: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.dados && data.dados.token) {
+                    authToken = data.dados.token;
+                    showMessage('Login bem-sucedido!', false);
+                    return true;
+                } else {
+                    const errorMessage = data.erros && data.erros.length > 0 ? data.erros.join(', ') : 'Credenciais inválidas ou erro desconhecido.';
+                    showMessage(`Falha no login: ${errorMessage}`);
+                    return false;
+                }
+            } catch (error) {
+                showMessage(`Erro de rede ao autenticar (certifique-se que o proxy Python está rodando na porta 5000): ${error.message}`);
+                return false;
+            }
+        }
+
+        async function fetchAndFilterAbastecimentos() {
+            if (!authToken) {
+                showMessage('Token de autenticação não encontrado. Faça login novamente.');
+                return;
+            }
+
+            const dataIni = startDateInput.value;
+            const dataFim = endDateInput.value;
+            const comboistaFilter = comboistaInput.value.trim();
+            const frotaFilter = frotaInput.value.trim();
+            const placaFilter = placaInput.value.trim();
+            const ccFilter = ccInput.value.trim();
+
+            if (!dataIni || !dataFim) {
+                dataStatusP.textContent = 'Por favor, selecione as datas inicial e final.';
+                abastecimentosTableWrapper.style.display = 'none';
+                paginationControlsDiv.style.display = 'none';
+                dashboardContent.style.display = 'none';
+                // Esconde os cards/gráficos condicionais
+                if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+                if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+                const headerRow = abastecimentosTableDiv.querySelector('.table-header');
+                abastecimentosTableDiv.innerHTML = '';
+                if (headerRow) {
+                    abastecimentosTableDiv.appendChild(headerRow);
+                }
+                return;
+            }
+
+            dataStatusP.textContent = 'Carregando dados...';
+            abastecimentosTableWrapper.style.display = 'none';
+            paginationControlsDiv.style.display = 'none';
+            dashboardContent.style.display = 'none';
+            // Esconde os cards/gráficos condicionais durante o carregamento
+            if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+            if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+
+            const headerRow = abastecimentosTableDiv.querySelector('.table-header');
+            abastecimentosTableDiv.innerHTML = '';
+            if (headerRow) {
+                abastecimentosTableDiv.appendChild(headerRow);
+            }
+
+            const params = new URLSearchParams({
+                dataIni: dataIni,
+                dataFim: dataFim,
+                referencia: 'data_abast',
+                allData: 'true',
+                limit: 10000
+            });
+
+            try {
+                const response = await fetch(`${ABASTECIMENTOS_ENDPOINT}?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.dados) {
+                    allAbastecimentos = data.dados;
+
+                    filteredAbastecimentos = allAbastecimentos.filter(abast => {
+                        const comboistaMatches = comboistaFilter === '' || 
+                                                 (abast.comboista && abast.comboista.toString() === comboistaFilter) ||
+                                                 (abast.comboista && (comboistaNames[abast.comboista.toString()] && comboistaNames[abast.comboista.toString()].toUpperCase().includes(comboistaFilter.toUpperCase())));
+
+                        const matchesFrota = frotaFilter === '' || (abast.frota && abast.frota.toString().toUpperCase().includes(frotaFilter.toUpperCase()));
+                        const matchesPlaca = placaFilter === '' || (abast.placa && abast.placa.toString().toUpperCase().includes(placaFilter.toUpperCase()));
+                        const matchesCc = ccFilter === '' || (abast.cc && abast.cc.toString().toUpperCase().includes(ccFilter.toUpperCase()));
+
+
+                        return comboistaMatches && matchesFrota && matchesPlaca && matchesCc;
+                    });
+                    
+                    if (filteredAbastecimentos.length > 0) {
+                        dataStatusP.textContent = `Foram encontrados ${filteredAbastecimentos.length} abastecimentos que correspondem aos filtros.`;
+                        currentPage = 1;
+                        rowsPerPage = parseInt(limitSelect.value);
+                        displayPaginatedData();
+                        
+                        const showFilteredVehicleDetails = frotaFilter !== '' || placaFilter !== '';
+
+                        if (showDashboard) {
+                            dashboardContent.style.display = 'block';
+                            generateCharts(filteredAbastecimentos); 
+
+                            // Controla a visibilidade dos cards/gráficos específicos
+                            if (chartConsumoDiarioCard) {
+                                chartConsumoDiarioCard.style.display = showFilteredVehicleDetails ? 'flex' : 'none';
+                            }
+                            if (totalKmRodadoCard) {
+                                totalKmRodadoCard.style.display = showFilteredVehicleDetails ? 'flex' : 'none';
+                            }
+
+                        } else {
+                            dashboardContent.style.display = 'none';
+                            // Garante que os cards/gráficos condicionais estejam ocultos se o dashboard estiver oculto
+                            if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+                            if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+                        }
+                    } else {
+                        dataStatusP.textContent = `Nenhum abastecimento encontrado para os filtros aplicados.`;
+                        filteredAbastecimentos = [];
+                        displayPaginatedData();
+                        dashboardContent.style.display = 'none';
+                        // Esconde os cards/gráficos condicionais se não houver dados ou filtros não atendidos
+                        if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+                        if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+                    }
+                } else {
+                    const errorMessage = data.erros && data.erros.length > 0 ? data.erros.join(', ') : 'Erro ao carregar dados.';
+                    dataStatusP.textContent = `Erro ao carregar dados: ${errorMessage}`;
+                    abastecimentosTableWrapper.style.display = 'none';
+                    paginationControlsDiv.style.display = 'none';
+                    // Esconde os cards/gráficos condicionais em caso de erro
+                    if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+                    if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+
+                    const errorRow = document.createElement('div');
+                    errorRow.className = 'table-row';
+                    errorRow.innerHTML = `<div class="table-cell" style="grid-column: 1 / -1; color: red;">${errorMessage}</div>`;
+                    abastecimentosTableDiv.appendChild(errorRow);
+                    dashboardContent.style.display = 'none';
+                }
+            } catch (error) {
+                dataStatusP.textContent = `Erro de rede ao buscar abastecimentos (verifique se o proxy Python está rodando): ${error.message}`;
+                abastecimentosTableWrapper.style.display = 'none';
+                paginationControlsDiv.style.display = 'none';
+                // Esconde os cards/gráficos condicionais em caso de erro de rede
+                if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+                if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+
+                const errorRow = document.createElement('div');
+                    errorRow.className = 'table-row';
+                    errorRow.innerHTML = `<div class="table-cell" style="grid-column: 1 / -1; color: red;">Erro de rede ao buscar abastecimentos.</div>`;
+                    abastecimentosTableDiv.appendChild(errorRow);
+                    dashboardContent.style.display = 'none';
+            }
+        }
+
+        // --- Event Listeners ---
+
+        loginButton.addEventListener('click', async () => {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            if (!username || !password) {
+                showMessage('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            const success = await authenticate(username, password);
+            if (success) {
+                hideLoginShowData();
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(endDate.getDate() - 30);
+                
+                startDateInput.value = formatDate(startDate);
+                endDateInput.value = formatDate(endDate);
+            }
+        });
+
+        searchButton.addEventListener('click', () => {
+            fetchAndFilterAbastecimentos();
+        });
+
+        limitSelect.addEventListener('change', () => {
+            rowsPerPage = parseInt(limitSelect.value);
+            currentPage = 1;
+            displayPaginatedData();
+        });
+
+        logoutButton.addEventListener('click', () => {
+            authToken = null;
+            showMessage('Sessão encerrada.', false);
+            showLoginHideData();
+            usernameInput.value = '';
+            passwordInput.value = '';
+            startDateInput.value = '';
+            endDateInput.value = '';
+            comboistaInput.value = '';
+            frotaInput.value = '';
+            placaInput.value = '';
+            ccInput.value = '';
+            limitSelect.value = '5';
+            allAbastecimentos = [];
+            filteredAbastecimentos = [];
+            currentPage = 1;
+            totalPages = 1;
+            showDashboard = true;
+            toggleDashboardBtn.innerHTML = '<i>📊</i> Alternar Dashboard';
+            // Garante que os cards/gráficos condicionais estejam ocultos ao sair
+            if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+            if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+        });
+        
+        prevPageButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayPaginatedData();
+            }
+        });
+        
+        nextPageButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayPaginatedData();
+            }
+        });
+        
+        toggleDashboardBtn.addEventListener('click', () => {
+            showDashboard = !showDashboard;
+            if (showDashboard) {
+                dashboardContent.style.display = 'block';
+                toggleDashboardBtn.innerHTML = '<i>📊</i> Alternar Dashboard';
+                if (filteredAbastecimentos.length > 0) {
+                    generateCharts(filteredAbastecimentos);
+                    const placaFilter = placaInput.value.trim();
+                    const frotaFilter = frotaInput.value.trim();
+                    const showFilteredVehicleDetails = frotaFilter !== '' || placaFilter !== '';
+
+                    // Reavalia a visibilidade dos cards/gráficos quando o dashboard é mostrado
+                    if (chartConsumoDiarioCard) {
+                        chartConsumoDiarioCard.style.display = showFilteredVehicleDetails ? 'flex' : 'none';
+                    }
+                    if (totalKmRodadoCard) {
+                        totalKmRodadoCard.style.display = showFilteredVehicleDetails ? 'flex' : 'none';
+                    }
+                }
+            } else {
+                dashboardContent.style.display = 'none';
+                toggleDashboardBtn.innerHTML = '<i>📋</i> Mostrar Dashboard';
+                // Garante que os cards/gráficos condicionais sejam ocultados ao esconder o dashboard
+                if (chartConsumoDiarioCard) chartConsumoDiarioCard.style.display = 'none';
+                if (totalKmRodadoCard) totalKmRodadoCard.style.display = 'none';
+            }
+        });
+        
+        // Event listeners para os botões de tab do gráfico de litragem
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Aqui você implementaria a mudança entre dados diários/mensais
+                // Para simplificar, estamos usando apenas dados diários
+            });
+        });
+    </script>
+</body>
+</html>
